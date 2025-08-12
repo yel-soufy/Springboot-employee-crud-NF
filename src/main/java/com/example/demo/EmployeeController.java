@@ -3,6 +3,7 @@ package com.example.demo;
 import com.example.demo.dto.EmployeeRequest;
 import com.example.demo.dto.EmployeeResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,13 +12,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/employees")
+@RequiredArgsConstructor
 public class EmployeeController {
 
     private final EmployeeService service;
-
-    public EmployeeController(EmployeeService service) {
-        this.service = service;
-    }
 
     // CREATE -> 201 + Location header
     @PostMapping
@@ -29,21 +27,23 @@ public class EmployeeController {
 
     // LIST -> 200
     @GetMapping
-    public List<EmployeeResponse> list() {
-        return service.list();
+    public ResponseEntity<List<EmployeeResponse>> list() {
+        return ResponseEntity.ok(service.list());
     }
 
-    // GET by id -> 200 (404 handled by GlobalExceptionHandler)
+    // GET by id -> 200 (404 handled globally)
     @GetMapping("/{id}")
-    public EmployeeResponse get(@PathVariable Long id) {
-        return service.get(id);
+    public ResponseEntity<EmployeeResponse> get(@PathVariable Long id) {
+        EmployeeResponse employee = service.get(id);
+        return ResponseEntity.ok(employee);
     }
 
     // UPDATE -> 200
     @PutMapping("/{id}")
-    public EmployeeResponse update(@PathVariable Long id,
-            @RequestBody @Valid EmployeeRequest req) {
-        return service.update(id, req);
+    public ResponseEntity<EmployeeResponse> update(@PathVariable Long id,
+                                                   @RequestBody @Valid EmployeeRequest req) {
+        EmployeeResponse updated = service.update(id, req);
+        return ResponseEntity.ok(updated);
     }
 
     // DELETE -> 204 (no body)

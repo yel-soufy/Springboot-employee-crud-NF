@@ -1,6 +1,5 @@
 package com.example.demo;
 
-
 import com.example.demo.dto.EmployeeRequest;
 import com.example.demo.dto.EmployeeResponse;
 import lombok.RequiredArgsConstructor;
@@ -9,21 +8,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
+@Service // make this a Spring bean
+@Transactional // wrap public methods in a DB transaction
 @RequiredArgsConstructor
-@Transactional
 public class EmployeeService {
 
     private final EmployeeRepository repo;
 
-
-
-
-
     // CREATE
     public EmployeeResponse create(EmployeeRequest req) {
+        // ensure email is unique
         repo.findByEmail(req.getEmail()).ifPresent(e -> {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("email already exists");
         });
 
         Employee e = new Employee();
@@ -42,19 +38,20 @@ public class EmployeeService {
 
     // GET by id
     public EmployeeResponse get(Long id) {
-        Employee e = repo.findById(id).orElseThrow(() ->
-                new ResourceNotFoundException("Employee " + id + " not found"));
+        Employee e = repo.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Employee " + id + " not found"));
         return toResponse(e);
     }
 
     // UPDATE
     public EmployeeResponse update(Long id, EmployeeRequest req) {
-        Employee e = repo.findById(id).orElseThrow(() ->
-                new ResourceNotFoundException("Employee " + id + " not found"));
+        Employee e = repo.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Employee " + id + " not found"));
 
+        // if email changed, keep unique
         if (!e.getEmail().equals(req.getEmail())) {
             repo.findByEmail(req.getEmail()).ifPresent(x -> {
-                throw new IllegalArgumentException("Email already exists");
+                throw new IllegalArgumentException("email already exists");
             });
         }
 
@@ -74,7 +71,7 @@ public class EmployeeService {
         repo.deleteById(id);
     }
 
-    // Mapper: Entity -> Response DTO
+    // mapper: Entity -> Response
     private EmployeeResponse toResponse(Employee e) {
         EmployeeResponse r = new EmployeeResponse();
         r.setId(e.getId());
